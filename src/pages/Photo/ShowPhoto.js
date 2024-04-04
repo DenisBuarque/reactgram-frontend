@@ -6,12 +6,19 @@ import Message from "../../components/Message";
 import Photo from "../../components/Photo";
 import Like from "../../components/Like";
 
-import { getPhoto, userLike } from "../../slices/photoSlice";
+import {
+  getPhoto,
+  userLike,
+  resetMessage,
+  commentUser,
+} from "../../slices/photoSlice";
 
 const ShowPhoto = () => {
   const { id } = useParams();
 
   const dispatch = useDispatch();
+
+  const [commentText, setCommentText] = useState("");
 
   const { user } = useSelector((state) => state.auth);
   const { photo, loading, error, message } = useSelector(
@@ -20,7 +27,24 @@ const ShowPhoto = () => {
 
   const handleLike = () => {
     dispatch(userLike(photo._id));
-  }
+  };
+
+  const handleComment = (e) => {
+    e.preventDefault();
+
+    const commentData = {
+      comment: commentText,
+      id: photo._id,
+    };
+
+    dispatch(commentUser(commentData));
+
+    setCommentText("");
+
+    setTimeout(() => {
+      dispatch(resetMessage());
+    }, 3000);
+  };
 
   useEffect(() => {
     dispatch(getPhoto(id));
@@ -37,7 +61,55 @@ const ShowPhoto = () => {
 
       <Photo photo={photo} />
       <Like photo={photo} user={user} handleLike={handleLike} />
+      <h2>{photo.comments && photo.comments.length} Comentário(s).</h2>
+      <div className="my-5">
+        <form onSubmit={handleComment}>
+          <div className="flex">
+            <input
+              type="text"
+              name="comment"
+              className="border p-3 rounded w-full mr-1"
+              placeholder="Digite um comentário"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
 
+            <button
+              type="submit"
+              className="bg-gray-300 text-center p-3 block rounded"
+            >
+              Enviar
+            </button>
+          </div>
+        </form>
+
+        {message && <Message msg={message} type="bg-green-300" />}
+        {error && <Message msg={message} type="bg-red-300" />}
+      </div>
+
+      {photo.comments && (
+        <>
+          {photo.comments.length === 0 && <p>Não há comentários no momento.</p>}
+          {photo.comments &&
+            photo.comments.map((comment, index) => (
+              <div key={index} className="mb-3">
+                <div className="flex items-center">
+                  {comment.userImage && (
+                    <img
+                      src={`http://localhost:5000/uploads/users/${comment.userImage}`}
+                      alt={comment.userName} 
+                      className="w-8 h-8 rounded-full mr-2"
+                    />
+                  )}
+                  <Link to={`/profile/show/${comment.userId}`}>
+                    {comment.userName}
+                  </Link>
+                </div>
+                <p className="text-gray-500">{comment.comment}</p>
+              </div>
+            ))}
+        </>
+      )}
     </div>
   );
 };
