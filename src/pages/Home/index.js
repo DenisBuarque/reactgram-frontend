@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 // components
 import Like from "../../components/Like";
-import Message from "../../components/Message";
 import Photo from "../../components/Photo";
 //redux
 import { useSelector, useDispatch } from "react-redux";

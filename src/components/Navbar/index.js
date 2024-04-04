@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { logout, reset } from "../../slices/authSlice";
 
 const Navbar = () => {
+  const [query, setQuery] = useState("");
+
   const { auth } = useAuth();
   const { user } = useSelector((state) => state.auth);
 
@@ -27,18 +29,31 @@ const Navbar = () => {
     dispatch(logout());
     dispatch(reset());
     navigate("/login");
-  }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (query) {
+      return navigate(`/search?q=${query}`);
+    }
+  };
 
   return (
     <nav className="flex justify-between items-center bg-slate-300 p-3">
       <Link to="/" className="text-2xl font-semibold">
         ReactGram
       </Link>
-      <form className="flex gap-1 items-center relative">
+      <form
+        onSubmit={handleSearch}
+        className="flex gap-1 items-center relative"
+      >
         <BsSearch className="absolute left-1" />
         <input
           type="search"
-          name="search"
+          name="query"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="O quê procura?"
           className="pl-7 p-1 rounded"
         />
