@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, thunkAPI } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import photoService from "../services/photoService";
 
 const initialState = {
@@ -99,6 +99,15 @@ export const commentUser = createAsyncThunk(
       return thunkAPI.rejectWithValue(data.errors[0]);
     }
 
+    return data;
+  }
+);
+
+export const getAllPhotos = createAsyncThunk(
+  "photo/getall",
+  async (_, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user.token;
+    const data = await photoService.getAllPhotos(token);
     return data;
   }
 );
@@ -223,7 +232,15 @@ export const photoSlice = createSlice({
       .addCase(commentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });;
+      }).addCase(getAllPhotos.pending, (state) => {
+        state.loading = true;
+        state.error = false;
+      }).addCase(getAllPhotos.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.error = null;
+        state.photos = action.payload;
+      });
   },
 });
 
